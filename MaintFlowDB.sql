@@ -5,7 +5,7 @@ CREATE TABLE usuarios (
 	id_usuario INT NOT NULL AUTO_INCREMENT,
     usuario VARCHAR(250) NOT NULL UNIQUE,
     email VARCHAR(250) NOT NULL UNIQUE,
-    senha VARCHAR(250) NOT NULL UNIQUE,
+    senha VARCHAR(250) NOT NULL,
     tipo_usuario ENUM('ADMIN', 'TECNICO', 'CLIENTE') NOT NULL,
     status_usuario ENUM('ATIVO', 'INATIVO') DEFAULT 'ATIVO' NOT NULL,
     
@@ -71,3 +71,5 @@ CREATE TABLE ordens_servico (
     FOREIGN KEY (id_tecnico) REFERENCES usuarios(id_usuario),
     FOREIGN KEY (id_status_ordem) REFERENCES status_ordem (id_status_ordem)
 );
+
+ALTER TABLE usuarios MODIFY COLUMN senha VARCHAR(250) NOT NULL;

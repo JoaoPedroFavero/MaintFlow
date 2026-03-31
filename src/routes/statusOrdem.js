@@ -6,3 +6,5 @@ const {pool} = require(`../config/db`);
 
 const router = express.Router();
 
+module.exports = router;
+

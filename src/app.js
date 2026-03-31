@@ -10,7 +10,7 @@ try{
     app.use(express.json());
     app.get(`/`, (req, res) => res.send({status: `sucess`, message: `rota principal funcionando!`}));
 
-    app.use(`/api`, serverRoutes);
+    app.use(`/`, serverRoutes);
 
     async function dbValidation(){
         const result = await testConnection();
