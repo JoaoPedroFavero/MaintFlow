@@ -13,12 +13,12 @@ const bcrypt = require(`bcrypt`);
 router.post(`/`, async (req, res) => {
     const {usuario, email, senha, tipo_usuario} = req.body;
 
-    if(usuario.trim() === '' || usuario.length > 250){
-        return res.status(400).json({error: `O campo 'usuario' é obrigatório e deve conter no máximo 250 caracteres.`});
+    if(usuario.trim() === '' || usuario.length > 250 || usuario.length < 3){
+        return res.status(400).json({error: `O campo 'usuario' é obrigatório e deve conter entre 3 e 250 caracteres.`});
     }
 
-    if(email.trim() === '' || email.length > 250){
-        return res.status(400).json({error: `O campo 'email' é obrigatório e deve conter no máximo 250 caracteres.`});
+    if(email.trim() === '' || email.length > 250 || email.length < 10 || !email.includes('@') || !email.includes('.')) {
+        return res.status(400).json({error: `O campo 'email' é obrigatório e deve conter entre 10 e 250 caracteres, com '@' e '.'.`});
     }
 
     try {
@@ -43,10 +43,7 @@ router.post(`/`, async (req, res) => {
 
     try{
         if(senha.length < 8) {
-            return res.status(400).json({error: `A senha deve conter 8 caracteres.`});
-        }
-        if(senha.length > 8){
-            return res.status(400).json({error: `A senha deve conter no máximo 8 caracteres.`});
+            return res.status(400).json({error: `A senha deve conter pelo menos 8 caracteres.`});
         }
     } catch (error){
         console.error(`Erro ao validar senha:`, error);
@@ -136,7 +133,7 @@ router.put(`/atualizar/:user`, async (req, res) => {
             return res.status(400).json({error: `Usuário já existe. Tente outro nome de usuário.`});
         }
 
-        putItens.push(`usuario = ?`);
+        putItens.push(`usuario`);
         putValues.push(usuario);
 
     } catch (error) {
@@ -150,7 +147,7 @@ router.put(`/atualizar/:user`, async (req, res) => {
             return res.status(400).json({error: `Email já cadastrado. Tente outro email.`});
         }
 
-        putItens.push(`email = ?`);
+        putItens.push(`email`);
         putValues.push(email);
 
     } catch (error) {
@@ -160,13 +157,10 @@ router.put(`/atualizar/:user`, async (req, res) => {
 
     try{
         if(senha.length < 8) {
-            return res.status(400).json({error: `A nova senha deve conter 8 caracteres.`});
-        }
-        if(senha.length > 8){
-            return res.status(400).json({error: `A nova senha deve conter no máximo 8 caracteres.`});
+            return res.status(400).json({error: `A nova senha deve conter pelo menos 8 caracteres.`});
         }
 
-        putItens.push(`senha = ?`);
+        putItens.push(`senha`);
         
         const saltRounds = 10;
         const senhaHash = await bcrypt.hash(senha, saltRounds);
@@ -205,7 +199,7 @@ router.delete(`/inativar/:user`, async (req, res) => {
             return res.status(404).json({message: `Usuário ${user} não encontrado.`});
         }
     } catch (error) {
-        console.error(`Erro ao excluir usuário ${user}:`, error);
+        console.error(`Erro ao inativar usuário ${user}:`, error);
         res.status(500).json({error: `Erro interno do servidor.`});
     }
 
