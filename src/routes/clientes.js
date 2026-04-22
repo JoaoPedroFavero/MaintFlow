@@ -1,5 +1,6 @@
 `use strict`;
 
+
 const express = require(`express`);
 
 const {pool} = require(`../config/db`);
@@ -7,6 +8,15 @@ const {pool} = require(`../config/db`);
 const router = express.Router();
 
 const bcrypt = require(`bcrypt`);
+
+const { validator } = require('cpf-cnpj-validator');
+
+const Joi = require('@hapi/joi').extend(validator);
+
+const schema = Joi.object({
+  cpf: Joi.document().cpf().required(),
+  cnpj: Joi.document().cnpj().required()
+})
 
 /*	id_cliente INT NOT NULL AUTO_INCREMENT,
     cnpj_cliente CHAR(14) UNIQUE,
@@ -71,12 +81,14 @@ router.post(`/`, async (req, res) => {
         }
 
         if(tipo_cliente === 'PF') {
-            if(cpf_cliente.trim() === '' || cpf_cliente.length !== 11){
+            cpfValidation = await schema.validateAsync({ cpf: cpf_cliente })
+            if(cpf_cliente.trim() === '' || cpf_cliente.length !== 11 || !cpfValidation) {
                 throw new Error(`O campo 'cpf_cliente' é obrigatório para clientes do tipo PF e deve conter exatamente 11 caracteres.`);
             }
         
         } else if(tipo_cliente === 'PJ') {
-            if(cnpj_cliente.trim() === '' || cnpj_cliente.length !== 14){
+            cnpjValidation = await schema.validateAsync({ cnpj: cnpj_cliente })
+            if(cnpj_cliente.trim() === '' || cnpj_cliente.length !== 14 || !cnpjValidation) {
                 throw new Error(`O campo 'cnpj_cliente' é obrigatório para clientes do tipo PJ e deve conter exatamente 14 caracteres.`);
             }
 
@@ -120,6 +132,96 @@ router.post(`/`, async (req, res) => {
         connection.release();
     }
     
+});
+
+//-----------------------------------------------------------------------------------------------------------------------------------
+
+router.get(`/`, async (req, res) => {
+    try{
+        const [result] = await pool.execute(`SELECT * FROM clientes`);
+        if(result.length === 0) {
+            return res.status(404).json({message: `Nenhum cliente encontrado.`});
+        }
+        res.json(result);
+    } catch (error) {
+        console.error(`Erro ao buscar clientes:`, error);
+        res.status(500).json({error: `Erro interno do servidor.`});
+    }
+});
+
+router.get(`/nomeCliente/:nome`, async (req, res) => {
+    const {nome} = req.params;
+
+    nome = nome.trim();
+
+    try{
+        const [result] = await pool.execute(`SELECT * FROM clientes WHERE nome_cliente LIKE ?`, [`%${nome}%`]);
+        if(result.length === 0) {
+            return res.status(404).json({message: `Nenhum cliente encontrado.`});
+        }
+        res.json(result);
+    } catch (error) {
+        console.error(`Erro ao buscar clientes pelo nome:`, error);
+        res.status(500).json({error: `Erro interno do servidor.`});
+    }
+});
+
+router.get(`/cpfCliente/:cpf`, async (req, res) => {
+    const {cpf} = req.params;
+
+    cpf = cpf.trim();
+
+    try{
+        const [result] = await pool.execute(`SELECT * FROM clientes WHERE cpf_cliente = ?`, [cpf]);
+        if(result.length === 0) {
+            return res.status(404).json({message: `Nenhum cliente encontrado.`});
+        }
+        res.json(result);
+    } catch (error) {
+        console.error(`Erro ao buscar clientes pelo CPF:`, error);
+        res.status(500).json({error: `Erro interno do servidor.`});
+    }
+});
+
+router.get(`/cnpjCliente/:cnpj`, async (req, res) => {
+    const {cnpj} = req.params;
+
+    cnpj = cnpj.trim();
+
+    try{
+        const [result] = await pool.execute(`SELECT * FROM clientes WHERE cnpj_cliente = ?`, [cnpj]);
+        if(result.length === 0) {
+            return res.status(404).json({message: `Nenhum cliente encontrado.`});
+        }
+        res.json(result);
+    } catch (error) {
+        console.error(`Erro ao buscar clientes pelo CNPJ:`, error);
+        res.status(500).json({error: `Erro interno do servidor.`});
+    }
+});
+
+//-----------------------------------------------------------------------------------------------------------------------------------
+
+router.delete(`/inativar/:id`, async (req, res) => {
+    const {id} = req.params;
+
+    try{
+        const[result] = await pool.execute(`SELECT * FROM usuarios WHERE usuario = ?`, [id]);
+        if(result.length === 0) {
+            return res.status(404).json({message: `Usuário ${id} não encontrado.`});
+        }
+    } catch (error) {
+        console.error(`Erro ao inativar usuário ${id}:`, error);
+        res.status(500).json({error: `Erro interno do servidor.`});
+    }
+
+    try {
+        await pool.execute(`UPDATE usuarios SET status_usuario = 'INATIVO' WHERE usuario = ?`, [id]);
+        res.json({message: `Usuário ${id} inativado com sucesso.`});
+    } catch (error) {
+        console.error(`Erro ao inativar usuário ${id}:`, error);
+        res.status(500).json({error: `Erro interno do servidor.`});
+    }
 });
 
 //-----------------------------------------------------------------------------------------------------------------------------------
