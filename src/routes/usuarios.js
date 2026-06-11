@@ -13,11 +13,11 @@ const bcrypt = require(`bcrypt`);
 router.post(`/`, async (req, res) => {
     const {usuario, email, senha, tipo_usuario} = req.body;
 
-    if(usuario.trim() === '' || usuario.length > 250 || usuario.length < 3){
+    if(usuario.trim() === `` || usuario.length > 250 || usuario.length < 3){
         return res.status(400).json({error: `O campo 'usuario' é obrigatório e deve conter entre 3 e 250 caracteres.`});
     }
 
-    if(email.trim() === '' || email.length > 250 || email.length < 10 || !email.includes('@') || !email.includes('.')) {
+    if(email.trim() === `` || email.length > 250 || email.length < 10 || !email.includes(`@`) || !email.includes(`.`)) {
         return res.status(400).json({error: `O campo 'email' é obrigatório e deve conter entre 10 e 250 caracteres, com '@' e '.'.`});
     }
 
@@ -41,20 +41,26 @@ router.post(`/`, async (req, res) => {
         return res.status(500).json({error: `Erro interno do servidor.`});
     }
 
-    try{
-        if(senha.length < 8) {
-            return res.status(400).json({error: `A senha deve conter pelo menos 8 caracteres.`});
+    const saltRounds = 10;
+    let senhaHash;
+
+    if (tipo_usuario === `CLIENTE`) {
+        const senhaPadrao = `cliente123`;
+        senhaHash = await bcrypt.hash(senhaPadrao, saltRounds);
+    } else {
+        try{
+            if(senha.length < 8) {
+                return res.status(400).json({error: `A senha deve conter pelo menos 8 caracteres.`});
+            }
+        } catch (error){
+            console.error(`Erro ao validar senha:`, error);
+            return res.status(500).json({error: `Erro interno do servidor.`});
         }
-    } catch (error){
-        console.error(`Erro ao validar senha:`, error);
-        return res.status(500).json({error: `Erro interno do servidor.`});
+        senhaHash = await bcrypt.hash(senha, saltRounds);
     }
 
-    const saltRounds = 10;
-    const senhaHash = await bcrypt.hash(senha, saltRounds);
-
     try{
-        if(tipo_usuario !== 'ADMIN' && tipo_usuario !== 'TECNICO' && tipo_usuario !== 'CLIENTE') {
+        if(tipo_usuario !== `ADMIN` && tipo_usuario !== `TECNICO` && tipo_usuario !== `CLIENTE`) {
             return res.status(400).json({error: `Tipo de usuário inválido. Deve ser ADMIN, TECNICO ou CLIENTE.`});
         }
     } catch (error) {
@@ -173,7 +179,7 @@ router.put(`/atualizar/:user`, async (req, res) => {
     }
 
     if(putItens.length === 0) {
-        return res.status(400).json({ error: "Nenhum campo para atualizar informado." });
+        return res.status(400).json({ error: `Nenhum campo para atualizar informado.` });
     }
 
     putValues.push(user);
