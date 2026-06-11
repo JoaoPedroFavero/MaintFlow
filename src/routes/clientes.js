@@ -8,9 +8,9 @@ const router = express.Router();
 
 const bcrypt = require(`bcrypt`);
 
-const { validator } = require('cpf-cnpj-validator');
+const { validator } = require(`cpf-cnpj-validator`);
 
-const Joi = require('@hapi/joi').extend(validator);
+const Joi = require(`@hapi/joi`).extend(validator);
 
 const schemaCPF = Joi.object({
     cpf: Joi.document().cpf().required()
@@ -32,12 +32,12 @@ router.post(`/`, async (req, res) => {
         let id_usuario;
 
         //Cria usuario a partir do cadastro do cliente
-        if(nome_cliente.trim() === '' || nome_cliente.length > 250 || nome_cliente.length < 3){
-            throw new Error(`O campo 'nome_cliente' é obrigatório e deve conter entre 3 e 250 caracteres.`);
+        if(nome_cliente.trim() === `` || nome_cliente.length > 250 || nome_cliente.length < 3){
+            throw new Error(`O campo \`nome_cliente\` é obrigatório e deve conter entre 3 e 250 caracteres.`);
         }
         
-        if(email.trim() === '' || email.length > 250 || email.length < 10 || !email.includes('@') || !email.includes('.')) {
-            throw new Error(`O campo 'email' é obrigatório e deve conter entre 10 e 250 caracteres, com '@' e '.'.`);
+        if(email.trim() === `` || email.length > 250 || email.length < 10 || !email.includes(`@`) || !email.includes(`.`)) {
+            throw new Error(`O campo \`email\` é obrigatório e deve conter entre 10 e 250 caracteres, com \`@\` e \`.\``);
         }
         
         const [emailResult] = await connection.execute(`SELECT * FROM usuarios WHERE email = ?`, [email]);
@@ -52,29 +52,29 @@ router.post(`/`, async (req, res) => {
         const saltRounds = 10;
         const senhaHash = await bcrypt.hash(senha, saltRounds);
 
-        const [userResult] = await connection.execute(`INSERT INTO usuarios (usuario, email, senha, tipo_usuario) VALUES (?, ?, ?, ?)`, [nome_cliente, email, senhaHash, 'CLIENTE']);
+        const [userResult] = await connection.execute(`INSERT INTO usuarios (usuario, email, senha, tipo_usuario) VALUES (?, ?, ?, ?)`, [nome_cliente, email, senhaHash, `CLIENTE`]);
         id_usuario = userResult.insertId;
      
 
         //Cria cliente
-        if(tipo_cliente !== 'PF' && tipo_cliente !== 'PJ') {
+        if(tipo_cliente !== `PF` && tipo_cliente !== `PJ`) {
             throw new Error(`Tipo de cliente inválido. Deve ser PF ou PJ.`);
         }
 
-        if(tipo_cliente === 'PF') {
+        if(tipo_cliente === `PF`) {
             cpfValidation = await schemaCPF.validateAsync({ cpf: cpf_cliente })
-            if(cpf_cliente.trim() === '' || cpf_cliente.length !== 11 || !cpfValidation) {
-                throw new Error(`O campo 'cpf_cliente' é obrigatório para clientes do tipo PF e deve conter exatamente 11 caracteres.`);
+            if(cpf_cliente.trim() === `` || cpf_cliente.length !== 11 || !cpfValidation) {
+                throw new Error(`O campo \`cpf_cliente\` é obrigatório para clientes do tipo PF e deve conter exatamente 11 caracteres.`);
             }
         
-        } else if(tipo_cliente === 'PJ') {
+        } else if(tipo_cliente === `PJ`) {
             cnpjValidation = await schemaCNPJ.validateAsync({ cnpj: cnpj_cliente })
-            if(cnpj_cliente.trim() === '' || cnpj_cliente.length !== 14 || !cnpjValidation) {
-                throw new Error(`O campo 'cnpj_cliente' é obrigatório para clientes do tipo PJ e deve conter exatamente 14 caracteres.`);
+            if(cnpj_cliente.trim() === `` || cnpj_cliente.length !== 14 || !cnpjValidation) {
+                throw new Error(`O campo \`cnpj_cliente\` é obrigatório para clientes do tipo PJ e deve conter exatamente 14 caracteres.`);
             }
 
-            if(razao_social.trim() === '' || razao_social.length > 250 || razao_social.length < 3){
-                throw new Error(`O campo 'razao_social' é obrigatório para clientes do tipo PJ e deve conter entre 3 e 250 caracteres.`);
+            if(razao_social.trim() === `` || razao_social.length > 250 || razao_social.length < 3){
+                throw new Error(`O campo \`razao_social\` é obrigatório para clientes do tipo PJ e deve conter entre 3 e 250 caracteres.`);
             }
 
             const [razaoResult] = await connection.execute(`SELECT * FROM clientes WHERE razao_social = ?`, [razao_social]);
@@ -84,8 +84,8 @@ router.post(`/`, async (req, res) => {
         }
 
         let validCep = cep.replace(/\D/g, '');
-        if(validCep.trim() === '' || validCep.length !== 8){
-            throw new Error(`O campo 'cep' é obrigatório e deve conter exatamente 8 caracteres numéricos.`);
+        if(validCep.trim() === `` || validCep.length !== 8){
+            throw new Error(`O campo \`cep\` é obrigatório e deve conter exatamente 8 caracteres numéricos.`);
         }
 
         if (validCep.length === 8) {
@@ -98,7 +98,7 @@ router.post(`/`, async (req, res) => {
                 uf = data.uf;
             }
             else{
-                throw new Error('CEP não encontrado');
+                throw new Error(`CEP não encontrado`);
             }
         }
         await connection.execute(`INSERT INTO clientes (cnpj_cliente, cpf_cliente, razao_social, nome_cliente, cep, endereco, cidade, uf, tipo_cliente, id_usuario) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, [cnpj_cliente || null, cpf_cliente || null, razao_social || null, nome_cliente, validCep, endereco, cidade, uf, tipo_cliente, id_usuario]);
@@ -338,12 +338,21 @@ router.put(`/atualizar/clienteId/:id`, async (req, res) => {
 
     const fields = [];
     const values = [];
+    const userFields = [];
+    const userValues = [];
+    let id_usuario;
+
+    const connection = await pool.getConnection();
 
     try{
-        const[result] = await pool.execute(`SELECT * FROM clientes WHERE id_cliente = ?`, [passedId]);
+        await connection.beginTransaction();
+
+        const[result] = await connection.execute(`SELECT * FROM clientes WHERE id_cliente = ?`, [passedId]);
         if(result.length === 0) {
             return res.status(404).json({message: `Cliente com ID ${passedId} não encontrado.`});
         }
+
+        id_usuario = result[0].id_usuario;
     } catch (error) {
         console.error(`Erro ao buscar cliente pelo ID ${passedId}:`, error);
         res.status(500).json({error: `Erro interno do servidor.`});
@@ -351,7 +360,7 @@ router.put(`/atualizar/clienteId/:id`, async (req, res) => {
 
     let clienteResult;
     try{
-        [clienteResult] = await pool.execute(`SELECT tipo_cliente FROM clientes WHERE id_cliente = ?`, [passedId]);
+        [clienteResult] = await connection.execute(`SELECT tipo_cliente FROM clientes WHERE id_cliente = ?`, [passedId]);
 
         if(clienteResult[0].tipo_cliente === `PJ`) {
             if(cnpj_cliente) {
@@ -399,7 +408,7 @@ router.put(`/atualizar/clienteId/:id`, async (req, res) => {
 
             if(nome_cliente){
                 if(nome_cliente.length > 250 || nome_cliente.length < 3){
-                    throw new Error(`O campo 'nome_cliente' é obrigatório e deve conter entre 3 e 250 caracteres.`);
+                    throw new Error(`O campo \`nome_cliente\` é obrigatório e deve conter entre 3 e 250 caracteres.`);
                 }
 
                 fields.push(`nome_cliente = ?`);
@@ -415,12 +424,17 @@ router.put(`/atualizar/clienteId/:id`, async (req, res) => {
 
     try {
         if(email) {
-            if(email.length > 250 || email.length < 10 || !email.includes('@') || !email.includes('.')) {
+            if(email.length > 250 || email.length < 10 || !email.includes(`@`) || !email.includes(`.`)) {
                 throw new Error(`O novo email é inválido! Para atualizar insira um email válido.`);
             }
 
-            fields.push(`email = ?`);
-            values.push(email);
+            const[emailResult] = await connection.execute(`SELECT * FROM usuarios WHERE email = ?`, [email]);
+            if(emailResult.length > 0) {
+                throw new Error(`Esse e-mail já está cadastrado. Tente outro e-mail.`);
+            }
+
+            userFields.push(`email = ?`);
+            userValues.push(email);
 
         }
 
@@ -432,12 +446,12 @@ router.put(`/atualizar/clienteId/:id`, async (req, res) => {
             const saltRounds = 10;
             const senhaHash = await bcrypt.hash(senha, saltRounds);
 
-            fields.push(`senha = ?`);
-            values.push(senhaHash);
+            userFields.push(`senha = ?`);
+            userValues.push(senhaHash);
         }
 
         if(tipo_cliente){
-            if(tipo_cliente !== 'PF' && tipo_cliente !== 'PJ') {
+            if(tipo_cliente !== `PF` && tipo_cliente !== `PJ`) {
                 throw new Error(`Tipo de cliente inválido. Deve ser PF ou PJ.`);
             }
 
@@ -448,7 +462,7 @@ router.put(`/atualizar/clienteId/:id`, async (req, res) => {
         if(cep){
             let validCep = cep.replace(/\D/g, '');
             if(validCep.length !== 8){
-                throw new Error(`Para atualizar o CEP, o campo 'CEP' deve conter exatamente 8 caracteres numéricos.`);
+                throw new Error(`Para atualizar o CEP, o campo \`CEP\` deve conter exatamente 8 caracteres numéricos.`);
             }
 
             if (validCep.length === 8) {
@@ -461,7 +475,7 @@ router.put(`/atualizar/clienteId/:id`, async (req, res) => {
                     uf = data.uf;
                 }
                 else{
-                    throw new Error('CEP não encontrado');
+                    throw new Error(`CEP não encontrado`);
                 }
             }
 
@@ -475,18 +489,30 @@ router.put(`/atualizar/clienteId/:id`, async (req, res) => {
     }
 
     try{
-        if(fields.length === 0) {
+        if(fields.length === 0 && userFields.length === 0) {
             return res.status(400).json({message: `Nenhum campo para atualizar. Por favor, envie pelo menos um campo válido para atualização.`});
         }
 
-        values.push(passedId);
-        const sql = `UPDATE clientes SET ${fields.join(', ')} WHERE id_cliente = ?`;
+        if(userFields.length > 0) {
+            userValues.push(id_usuario);
+            const sqlUsuario = `UPDATE usuarios SET ${userFields.join(', ')} WHERE id_usuario = ?`;
+            await connection.execute(sqlUsuario, userValues);
+        }
 
-        await pool.execute(sql, values);
+        if(fields.length > 0) {
+            values.push(passedId);
+            const sqlCliente = `UPDATE clientes SET ${fields.join(', ')} WHERE id_cliente = ?`;
+            await connection.execute(sqlCliente, values);
+        }
+
+        await connection.commit();
         res.json({message: `Cliente com ID ${passedId} atualizado com sucesso.`});
     } catch (error) {
+        await connection.rollback();
         console.error(`Erro ao atualizar cliente com ID ${passedId}:`, error);
         res.status(500).json({error: `Erro interno do servidor.`});
+    } finally {
+        connection.release();
     }
 
 });
@@ -505,14 +531,14 @@ module.exports = router;
     endereco VARCHAR(250),
     cidade VARCHAR(250),
     uf CHAR(2),
-    tipo_cliente ENUM ('PF', 'PJ') NOT NULL,
+    tipo_cliente ENUM (`PF`, `PJ`) NOT NULL,
     id_usuario INT NOT NULL,
     
     PRIMARY KEY (id_cliente),
     FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario),
     
     CHECK (
-	  (tipo_cliente = 'PF' AND cpf_cliente IS NOT NULL AND cnpj_cliente IS NULL) OR
-	  (tipo_cliente = 'PJ' AND cnpj_cliente IS NOT NULL AND cpf_cliente IS NULL)
+	  (tipo_cliente = `PF` AND cpf_cliente IS NOT NULL AND cnpj_cliente IS NULL) OR
+	  (tipo_cliente = `PJ` AND cnpj_cliente IS NOT NULL AND cpf_cliente IS NULL)
 	) 
 */

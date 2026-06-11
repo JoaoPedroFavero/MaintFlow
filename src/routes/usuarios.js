@@ -93,7 +93,7 @@ router.get(`/`, async (req, res) => {
 
     } catch (error) {
         console.error(`Erro ao buscar usuários:`, error);
-        res.status(500).json({errorr: `Erro interno do servidor.`});
+        res.status(500).json({error: `Erro interno do servidor.`});
     }
 });
 
@@ -196,6 +196,8 @@ router.put(`/atualizar/:user`, async (req, res) => {
 });
 //-----------------------------------------------------------------------------------------------------------------------------------
 
+// INATIVAR
+
 router.delete(`/inativar/:user`, async (req, res) => {
     const {user} = req.params;
 
@@ -217,5 +219,37 @@ router.delete(`/inativar/:user`, async (req, res) => {
         res.status(500).json({error: `Erro interno do servidor.`});
     }
 });
+
+//-----------------------------------------------------------------------------------------------------------------------------------
+
+// REATIVAR
+
+router.put(`/reativar/:user`, async (req, res) =>{
+    const {user} = req.params;
+
+        try{
+        const[result] = await pool.execute(`SELECT * FROM usuarios WHERE usuario = ?`, [user]);
+        if(result.length === 0) {
+            return res.status(404).json({message: `Usuário ${user} não encontrado.`});
+        }
+    } catch (error) {
+        console.error(`Erro ao reativar usuário ${user}:`, error);
+        res.status(500).json({error: `Erro interno do servidor.`});
+    }
+
+    try {
+        const [result] = await pool.execute(`SELECT status_usuario FROM usuarios WHERE usuario = ?`, [user]);
+        if (result[0].status_usuario === 'ATIVO') {
+            return res.status(400).json({ message: `Usuário ${user} já está ativo.` });
+        }
+
+        await pool.execute(`UPDATE usuarios SET status_usuario = 'ATIVO' WHERE usuario = ?`, [user]);
+        res.json({message: `Usuário ${user} reativado com sucesso.`});
+    } catch (error) {
+        console.error(`Erro ao reativar usuário ${user}:`, error);
+        res.status(500).json({error: `Erro interno do servidor.`});
+    }
+});
+
 
 module.exports = router;

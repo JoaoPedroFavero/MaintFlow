@@ -23,6 +23,19 @@ API REST para gerenciamento de manutenção, desenvolvida em Node.js com Express
   - Integração com ViaCEP para preenchimento automático de endereço
   - Cria automaticamente usuário do tipo CLIENTE
   - Suporta Pessoa Física (PF) e Pessoa Jurídica (PJ)
+- **GET** `/` - Lista todos os clientes
+- **GET** `/nomeCliente/:nome` - Busca cliente por nome
+- **GET** `/cpfCliente/:cpf` - Busca cliente por CPF
+- **GET** `/cnpjCliente/:cnpj` - Busca cliente por CNPJ
+- **DELETE** `/inativar/clienteId/:id` - Inativa cliente por ID
+- **DELETE** `/inativar/clienteCNPJ/:cnpj` - Inativa cliente por CNPJ
+- **DELETE** `/inativar/clienteCPF/:cpf` - Inativa cliente por CPF
+- **PUT** `/reativar/clienteId/:id` - Reativa cliente por ID
+- **PUT** `/reativar/clienteCNPJ/:cnpj` - Reativa cliente por CNPJ
+- **PUT** `/reativar/clienteCPF/:cpf` - Reativa cliente por CPF
+- **PUT** `/atualizar/clienteId/:id` - Atualiza dados do cliente
+  - Atualiza sincronamente cliente e usuário associado (email, senha)
+  - Usa transação para garantir atomicidade das operações
 
 #### `/usuarios`
 - **POST** `/` - Criação de usuários
@@ -34,6 +47,8 @@ API REST para gerenciamento de manutenção, desenvolvida em Node.js com Express
 - **GET** `/:user` - Busca usuário por nome
 - **PUT** `/atualizar/:user` - Atualiza dados do usuário
 - **DELETE** `/inativar/:user` - Inativa usuário (soft delete)
+- **PUT** `/reativar/:user` - Reativa usuário previamente inativado
+  - Verifica se o usuário já está ativo antes de reativar
 
 #### `/equipamentos`
 - Estrutura definida para gerenciamento de equipamentos
@@ -110,16 +125,14 @@ Configure as seguintes variáveis no arquivo `.env`:
 - Email: 10-250 caracteres, deve conter '@' e '.'
 - Senha: mínimo 8 caracteres (exceto CLIENTE que usa senha padrão)
 
-## Banco de Dados
-
-O projeto utiliza MySQL como banco de dados. O modelo entidade-relacionamento está disponível no arquivo `MER MaintFlowDB.mwb`.
-
 ## Segurança
 
 - Senhas hasheadas com bcrypt (saltRounds: 10)
 - Validação de CPF/CNPJ com biblioteca especializada
 - Validação de entrada de dados com Joi
 - Soft delete para usuários (inativação em vez de exclusão)
+- Transações para garantir atomicidade em operações críticas
+
 
 ## Desenvolvimento
 
