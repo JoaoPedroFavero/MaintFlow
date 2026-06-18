@@ -51,9 +51,16 @@ API REST para gerenciamento de manutenção, desenvolvida em Node.js com Express
   - Verifica se o usuário já está ativo antes de reativar
 
 #### `/equipamentos`
-- Estrutura definida para gerenciamento de equipamentos
-- Tipos: MAQUINA, FERRAMENTA, TOCHA
-- Em desenvolvimento
+- **POST** `/` - Cadastro de equipamentos
+  - Tipos: MAQUINA, FERRAMENTA, TOCHA
+  - Gera automaticamente número de série se não fornecido
+  - Formato do serial: prefixo (M/F/T) + nome cliente (5 chars) + número sequencial
+  - Exemplo: MJOAOPE1, FJOAOPE1, TJOAOPE1
+- **GET** `/` - Lista todos os equipamentos
+- **GET** `/id_equipamento/:id` - Busca equipamento por ID
+- **GET** `/tipo_equipamento/:tipo` - Busca equipamentos por tipo
+- **GET** `/marca_equipamento/:marca` - Busca equipamentos por marca (busca parcial)
+- **GET** `/modelo_equipamento/:modelo` - Busca equipamentos por modelo (busca parcial)
 
 #### `/ordens-servico`
 - Em desenvolvimento
@@ -133,6 +140,13 @@ Configure as seguintes variáveis no arquivo `.env`:
 - Soft delete para usuários (inativação em vez de exclusão)
 - Transações para garantir atomicidade em operações críticas
 
+## Melhorias Recentes
+
+- **Atualização sincronizada**: PUT de clientes atualiza tanto cliente quanto usuário associado em uma única transação
+- **Geração automática de serial**: Equipamentos geram número de série sequencial por tipo e cliente
+  - Formato: prefixo (M/F/T) + nome cliente (5 chars) + número sequencial
+  - Exemplo: MJOAOPE1, FJOAOPE1, TJOAOPE1
+
 
 ## Desenvolvimento
 
@@ -147,6 +161,6 @@ O projeto usa nodemon para reiniciar automaticamente quando há alterações nos
 
 - ✅ Usuários - Implementado
 - ✅ Clientes - Implementado
-- 🚧 Equipamentos - Em desenvolvimento
+- ✅ Equipamentos - Implementado
 - 🚧 Ordens de Serviço - Em desenvolvimento
 - 🚧 Status de Ordem - Em desenvolvimento

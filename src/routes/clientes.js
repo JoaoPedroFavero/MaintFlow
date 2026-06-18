@@ -331,6 +331,8 @@ router.put(`/reativar/clienteCPF/:cpf`, async (req, res) => {
 
 });
 
+// ATUALIZAR
+
 router.put(`/atualizar/clienteId/:id`, async (req, res) => {
     const passedId = req.params.id;
     const {cnpj_cliente, cpf_cliente, razao_social, nome_cliente, email, senha, tipo_cliente, cep} = req.body;

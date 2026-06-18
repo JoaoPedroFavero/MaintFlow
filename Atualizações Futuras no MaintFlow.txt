@@ -1,0 +1,4 @@
+Atualizações Futuras no MaintFlow
+1 - Alterar como são cadastrados os clientes pelos usuários (ver certinho com o Sasse);
+2 - Cadastro de Marcas para Menu suspenso de seleção;
+3 - Cadastro de Tipos de Equipamentos MAQUINA, FERRAMENTA e TOCHA para Menu suspenso de Seleção;
