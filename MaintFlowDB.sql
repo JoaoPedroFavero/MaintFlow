@@ -53,6 +53,14 @@ CREATE TABLE status_ordem (
     PRIMARY KEY (id_status_ordem)
 );
 
+CREATE TABLE condicao_pagamento (
+	id_condicao INT AUTO_INCREMENT NOT NULL UNIQUE,
+    condicao_pag VARCHAR(255) NOT NULL,
+    
+    PRIMARY KEY (id_condicao)
+);
+
+
 CREATE TABLE ordens_servico (
 	id_ordem INT AUTO_INCREMENT NOT NULL,
     data_abertura DATE NOT NULL,
@@ -62,16 +70,19 @@ CREATE TABLE ordens_servico (
     relatorio_tecnico TEXT,
     id_equipamento INT NOT NULL,
     id_cliente INT NOT NULL,
-    id_tecnico INT NOT NULL,clientes
+    id_tecnico INT NOT NULL,
     id_status_ordem INT NOT NULL,
+    id_condicao_pag INT NOT NULL,
     
     PRIMARY KEY (id_ordem),
     FOREIGN KEY (id_equipamento) REFERENCES equipamentos(id_equipamento),
     FOREIGN KEY (id_cliente) REFERENCES clientes(id_cliente),
     FOREIGN KEY (id_tecnico) REFERENCES usuarios(id_usuario),
-    FOREIGN KEY (id_status_ordem) REFERENCES status_ordem (id_status_ordem)
+    FOREIGN KEY (id_status_ordem) REFERENCES status_ordem (id_status_ordem),
+    FOREIGN KEY (id_condicao_pag) REFERENCES condicao_pagamento (id_condicao)
 );
 
 ALTER TABLE usuarios MODIFY COLUMN senha VARCHAR(250) NOT NULL;
 
 ALTER TABLE equipamentos ADD COLUMN status_equipamento ENUM('ATIVO', 'INATIVO') DEFAULT 'ATIVO' NOT NULL;
+ALTER TABLE ordens_servico ADD COLUMN id_condicao_pag INT NOT NULL;

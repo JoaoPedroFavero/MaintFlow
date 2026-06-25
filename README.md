@@ -67,6 +67,14 @@ API REST para gerenciamento de manutenção, desenvolvida em Node.js com Express
 - **DELETE** `/inativar/id_equipamento/:id` - Inativa equipamento por ID (soft delete)
 - **DELETE** `/inativar/identificador_equipamento/:identificador` - Inativa equipamento por identificador (soft delete)
 
+#### `/condicao-pagamento`
+- **POST** `/` - Criação de condição de pagamento
+- **GET** `/` - Lista todas as condições de pagamento
+- **GET** `/id/:id` - Busca condição de pagamento por ID
+- **GET** `/condicao/:nomeCondicao` - Busca condição de pagamento por nome (busca parcial)
+- **DELETE** `/deletar-condicao-pagamento/id/:id` - Deleta condição de pagamento por ID
+- **DELETE** `/deletar-condicao-pagamento/descricao/:descricao` - Deleta condição de pagamento por descrição
+
 #### `/ordens-servico`
 - Em desenvolvimento
 
@@ -88,6 +96,7 @@ MaintFlow/
 │       ├── equipamentos.js      # Rotas de equipamentos
 │       ├── ordensServico.js     # Rotas de ordens de serviço
 │       ├── statusOrdem.js       # Rotas de status de ordem
+│       ├── condicaoPagamento.js # Rotas de condição de pagamento
 │       └── usuarios.js          # Rotas de usuários
 ├── .env                  # Variáveis de ambiente
 ├── .envexemple           # Exemplo de variáveis de ambiente
@@ -171,5 +180,6 @@ O projeto usa nodemon para reiniciar automaticamente quando há alterações nos
 - ✅ Usuários - Implementado
 - ✅ Clientes - Implementado
 - ✅ Equipamentos - Implementado
+- ✅ Condição de Pagamento - Implementado
 - 🚧 Ordens de Serviço - Em desenvolvimento
 - 🚧 Status de Ordem - Em desenvolvimento
