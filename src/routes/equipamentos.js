@@ -13,6 +13,7 @@ const router = express.Router();
     modelo_equipamento VARCHAR(250) NOT NULL,
     identificador_equipamento VARCHAR(250) NOT NULL UNIQUE,
     id_cliente INT NOT NULL,
+    status_equipamento ENUM('ATIVO', 'INATIVO') DEFAULT 'ATIVO' NOT NULL,
     
     PRIMARY KEY (id_equipamento),
     FOREIGN KEY (id_cliente) REFERENCES clientes(id_cliente)
@@ -123,6 +124,23 @@ router.get(`/id_equipamento/:id`, async (req, res) => {
     }
 });
 
+router.get(`/identificador_equipamento/:identificador`, async (req, res) => {
+    const {identificador} = req.params;
+    try {
+        const [result] = await pool.execute(`SELECT * FROM equipamentos WHERE identificador_equipamento LIKE ?`, [`%${identificador}%`]);
+
+        if (result.length === 0) {
+            return res.status(404).json({message: `Nenhum equipamento com identificador ${identificador} encontrado.`});
+        }
+
+        res.status(200).json(result);
+
+    } catch (error) {
+        console.error(`Erro ao buscar equipamentos:`, error);
+        return res.status(500).json({error: `Erro interno do servidor.`});
+    }
+});
+
 router.get(`/tipo_equipamento/:tipo`, async (req, res) => {
     const {tipo} = req.params;
     try {
@@ -174,8 +192,122 @@ router.get(`/modelo_equipamento/:modelo`, async (req, res) => {
     }
 });
 
+router.get(`/equipamento_cliente_id/:id`, async (req, res) => {
+    const {id} = req.params;
+    try {
+        const [result] = await pool.execute(`SELECT * FROM equipamentos WHERE id_cliente = ?`, [id]);
+
+        if (result.length === 0) {
+            return res.status(404).json({message: `Nenhum equipamento do cliente com ID ${id} encontrado.`});
+        }
+
+        res.status(200).json(result);
+
+    } catch (error) {
+        console.error(`Erro ao buscar equipamentos:`, error);
+        return res.status(500).json({error: `Erro interno do servidor.`});
+    }
+});
+
+router.get(`/equipamento_cliente_CNPJ_CPF/:cnpj_cpf`, async (req, res) => {
+    const {cnpj_cpf} = req.params;
+    let clean_cnpj_cpf = cnpj_cpf.replace(/\D/g, '');
+    let clientId;
+    let clientDoc;
+
+    try{
+        if(clean_cnpj_cpf.length !== 11 && clean_cnpj_cpf.length !== 14) {
+            return res.status(400).json({message: `CNPJ/CPF inválido.`});
+        }
+
+        if(clean_cnpj_cpf.length === 11) {
+            const[resultCPF] = await pool.execute(`SELECT id_cliente FROM clientes WHERE cpf_cliente = ?`, [clean_cnpj_cpf]);
+            if (resultCPF.length === 0) {
+                return res.status(404).json({message: `Nenhum cliente com CPF ${clean_cnpj_cpf} encontrado.`});
+            }
+            clientId = resultCPF[0].id_cliente;
+            clientDoc = "CPF";
+        }
+
+        if(clean_cnpj_cpf.length === 14) {
+            const[resultCNPJ] = await pool.execute(`SELECT id_cliente FROM clientes WHERE cnpj_cliente = ?`, [clean_cnpj_cpf]);
+            if (resultCNPJ.length === 0) {
+                return res.status(404).json({message: `Nenhum cliente com CNPJ ${clean_cnpj_cpf} encontrado.`});
+            }
+            clientId = resultCNPJ[0].id_cliente;
+            clientDoc = "CNPJ";
+        }
+    } catch (error) {
+        console.error(`Erro ao buscar cliente:`, error);
+        return res.status(500).json({error: `Erro interno do servidor.`});
+    }
+
+
+    try {
+        const [result] = await pool.execute(`SELECT * FROM equipamentos WHERE id_cliente = ?`, [clientId]);
+
+        if (result.length === 0) {
+            return res.status(404).json({message: `Nenhum equipamento do cliente com ${clientDoc} ${clean_cnpj_cpf} encontrado.`});
+        }
+
+        res.status(200).json(result);
+
+    } catch (error) {
+        console.error(`Erro ao buscar equipamentos:`, error);
+        return res.status(500).json({error: `Erro interno do servidor.`});
+    }
+});
+
 //-----------------------------------------------------------------------------------------------------------------------------------
 
+router.delete(`/inativar/id_equipamento/:id`, async (req, res) => {
+    const {id} = req.params;
+    
+    try {
+        const[result] = await pool.execute(`SELECT * FROM equipamentos WHERE id_equipamento = ?`, [id]);
+        
+        if (result.length === 0) {
+            return res.status(404).json({message: `Equipamento com ID ${id} não encontrado.`});
+        }
+        
+    } catch (error) {
+        console.error(`Erro ao buscar id do equipamento:`, error);
+        return res.status(500).json({error: `Erro interno do servidor.`});
+    }
 
+    try {
+        await pool.execute(`UPDATE equipamentos SET status_equipamento = 'INATIVO' WHERE id_equipamento = ?`, [id]);
+        res.json({message: `Equipamento com ID ${id} inativado com sucesso.`});
+
+    } catch (error) {
+        console.error(`Erro ao inativar equipamento com ID ${id}:`, error);
+        res.status(500).json({error: `Erro interno do servidor.`});
+    }
+});
+
+router.delete(`/inativar/identificador_equipamento/:identificador`, async (req, res) => {
+    const {identificador} = req.params;
+    
+    try {
+        const[result] = await pool.execute(`SELECT * FROM equipamentos WHERE identificador_equipamento = ?`, [identificador]);
+        
+        if (result.length === 0) {
+            return res.status(404).json({message: `Equipamento com identificador ${identificador} não encontrado.`});
+        }
+        
+    } catch (error) {
+        console.error(`Erro ao buscar identificador do equipamento:`, error);
+        return res.status(500).json({error: `Erro interno do servidor.`});
+    }
+
+    try {
+        await pool.execute(`UPDATE equipamentos SET status_equipamento = 'INATIVO' WHERE identificador_equipamento = ?`, [identificador]);
+        res.json({message: `Equipamento com identificador ${identificador} inativado com sucesso.`});
+        
+    } catch (error) {
+        console.error(`Erro ao inativar equipamento com identificador ${identificador}:`, error);
+        res.status(500).json({error: `Erro interno do servidor.`});
+    }
+});
 
 module.exports = router;

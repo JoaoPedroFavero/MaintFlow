@@ -58,9 +58,14 @@ API REST para gerenciamento de manutenção, desenvolvida em Node.js com Express
   - Exemplo: MJOAOPE1, FJOAOPE1, TJOAOPE1
 - **GET** `/` - Lista todos os equipamentos
 - **GET** `/id_equipamento/:id` - Busca equipamento por ID
+- **GET** `/identificador_equipamento/:identificador` - Busca equipamento por identificador (busca parcial)
 - **GET** `/tipo_equipamento/:tipo` - Busca equipamentos por tipo
 - **GET** `/marca_equipamento/:marca` - Busca equipamentos por marca (busca parcial)
 - **GET** `/modelo_equipamento/:modelo` - Busca equipamentos por modelo (busca parcial)
+- **GET** `/equipamento_cliente_id/:id` - Busca equipamentos por ID do cliente
+- **GET** `/equipamento_cliente_CNPJ_CPF/:cnpj_cpf` - Busca equipamentos por CPF ou CNPJ do cliente
+- **DELETE** `/inativar/id_equipamento/:id` - Inativa equipamento por ID (soft delete)
+- **DELETE** `/inativar/identificador_equipamento/:identificador` - Inativa equipamento por identificador (soft delete)
 
 #### `/ordens-servico`
 - Em desenvolvimento
@@ -143,9 +148,13 @@ Configure as seguintes variáveis no arquivo `.env`:
 ## Melhorias Recentes
 
 - **Atualização sincronizada**: PUT de clientes atualiza tanto cliente quanto usuário associado em uma única transação
+- **Verificação de status**: Rota de reativação verifica se usuário já está ativo antes de tentar reativar
+- **Organização do código**: Adição de comentários de seção para melhor legibilidade (INATIVAR, REATIVAR, ATUALIZAR)
 - **Geração automática de serial**: Equipamentos geram número de série sequencial por tipo e cliente
   - Formato: prefixo (M/F/T) + nome cliente (5 chars) + número sequencial
   - Exemplo: MJOAOPE1, FJOAOPE1, TJOAOPE1
+- **Rotas de busca de equipamentos**: Implementadas rotas GET para buscar por ID, tipo, marca, modelo, cliente (ID e CPF/CNPJ)
+- **Soft delete para equipamentos**: Implementada inativação de equipamentos em vez de exclusão permanente
 
 
 ## Desenvolvimento

@@ -116,7 +116,7 @@ router.get(`/:user`, async (req, res) => {
 
 //-----------------------------------------------------------------------------------------------------------------------------------
 
-router.put(`/atualizar/:user`, async (req, res) => {
+router.put(`/atualizar/usuario/:user`, async (req, res) => {
     const {user} = req.params;
     const {usuario, email, senha} = req.body;
 
@@ -198,7 +198,7 @@ router.put(`/atualizar/:user`, async (req, res) => {
 
 // INATIVAR
 
-router.delete(`/inativar/:user`, async (req, res) => {
+router.delete(`/inativar/usuario/:user`, async (req, res) => {
     const {user} = req.params;
 
     try{
@@ -224,7 +224,7 @@ router.delete(`/inativar/:user`, async (req, res) => {
 
 // REATIVAR
 
-router.put(`/reativar/:user`, async (req, res) =>{
+router.put(`/reativar/usuario/:user`, async (req, res) =>{
     const {user} = req.params;
 
         try{

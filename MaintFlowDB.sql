@@ -62,7 +62,7 @@ CREATE TABLE ordens_servico (
     relatorio_tecnico TEXT,
     id_equipamento INT NOT NULL,
     id_cliente INT NOT NULL,
-    id_tecnico INT NOT NULL,
+    id_tecnico INT NOT NULL,clientes
     id_status_ordem INT NOT NULL,
     
     PRIMARY KEY (id_ordem),
@@ -73,3 +73,5 @@ CREATE TABLE ordens_servico (
 );
 
 ALTER TABLE usuarios MODIFY COLUMN senha VARCHAR(250) NOT NULL;
+
+ALTER TABLE equipamentos ADD COLUMN status_equipamento ENUM('ATIVO', 'INATIVO') DEFAULT 'ATIVO' NOT NULL;
