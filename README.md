@@ -76,7 +76,12 @@ API REST para gerenciamento de manutenção, desenvolvida em Node.js com Express
 - **DELETE** `/deletar-condicao-pagamento/descricao/:descricao` - Deleta condição de pagamento por descrição
 
 #### `/ordens-servico`
-- Em desenvolvimento
+- **POST** `/` - Criação de ordem de serviço
+  - Valida cliente, equipamento, técnico, condição de pagamento e status da ordem
+  - NF Remessa opcional (deve conter apenas números se fornecida)
+  - Defeito é obrigatório
+  - Relatório técnico opcional
+- Em desenvolvimento (outras rotas)
 
 #### `/status-ordem`
 - Em desenvolvimento

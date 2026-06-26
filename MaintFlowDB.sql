@@ -63,8 +63,8 @@ CREATE TABLE condicao_pagamento (
 
 CREATE TABLE ordens_servico (
 	id_ordem INT AUTO_INCREMENT NOT NULL,
-    data_abertura DATE NOT NULL,
-    condicao_pagamento VARCHAR(250) NOT NULL,
+    data_abertura DATETIME DEFAULT CURRENT_TIMESTAMP,
+    id_condicao_pagamento INT NOT NULL,
     nf_remessa VARCHAR(250),
     defeito TEXT NOT NULL,
     relatorio_tecnico TEXT,
@@ -72,17 +72,20 @@ CREATE TABLE ordens_servico (
     id_cliente INT NOT NULL,
     id_tecnico INT NOT NULL,
     id_status_ordem INT NOT NULL,
-    id_condicao_pag INT NOT NULL,
     
     PRIMARY KEY (id_ordem),
     FOREIGN KEY (id_equipamento) REFERENCES equipamentos(id_equipamento),
     FOREIGN KEY (id_cliente) REFERENCES clientes(id_cliente),
     FOREIGN KEY (id_tecnico) REFERENCES usuarios(id_usuario),
     FOREIGN KEY (id_status_ordem) REFERENCES status_ordem (id_status_ordem),
-    FOREIGN KEY (id_condicao_pag) REFERENCES condicao_pagamento (id_condicao)
+    FOREIGN KEY (id_condicao_pagamento) REFERENCES condicao_pagamento (id_condicao)
 );
+
+ALTER TABLE ordens_servico MODIFY COLUMN data_abertura DATETIME DEFAULT CURRENT_TIMESTAMP;
+ALTER TABLE ordens_servico MODIFY COLUMN condicao_pagamento INT NOT NULL;
+ALTER TABLE ordens_servico CHANGE COLUMN condicao_pagamento id_condicao_pagamento INT NOT NULL;
+SELECT * FROM ordens_servico;
 
 ALTER TABLE usuarios MODIFY COLUMN senha VARCHAR(250) NOT NULL;
 
 ALTER TABLE equipamentos ADD COLUMN status_equipamento ENUM('ATIVO', 'INATIVO') DEFAULT 'ATIVO' NOT NULL;
-ALTER TABLE ordens_servico ADD COLUMN id_condicao_pag INT NOT NULL;
