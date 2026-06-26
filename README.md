@@ -84,7 +84,14 @@ API REST para gerenciamento de manutenção, desenvolvida em Node.js com Express
 - Em desenvolvimento (outras rotas)
 
 #### `/status-ordem`
-- Em desenvolvimento
+- **POST** `/` - Criação de status de ordem
+- **GET** `/` - Lista todos os status de ordem
+- **GET** `/id/:id` - Busca status de ordem por ID
+- **GET** `/nome-status/:nome` - Busca status de ordem por nome
+- **DELETE** `/deletar-status-id/:id` - Deleta status de ordem por ID
+- **DELETE** `/deletar-status-nome/:nome` - Deleta status de ordem por nome
+- **PUT** `/atualizar-status-id/:id` - Atualiza status de ordem por ID
+- **PUT** `/atualizar-status-nome/:nome` - Atualiza status de ordem por nome
 
 ## Estrutura do Projeto
 
@@ -186,5 +193,5 @@ O projeto usa nodemon para reiniciar automaticamente quando há alterações nos
 - ✅ Clientes - Implementado
 - ✅ Equipamentos - Implementado
 - ✅ Condição de Pagamento - Implementado
-- 🚧 Ordens de Serviço - Em desenvolvimento
-- 🚧 Status de Ordem - Em desenvolvimento
+- ✅ Status de Ordem - Implementado
+- 🚧 Ordens de Serviço - Em desenvolvimento (POST implementado)
